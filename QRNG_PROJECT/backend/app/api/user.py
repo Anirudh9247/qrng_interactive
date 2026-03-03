@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from app.core.security import verify_password
 from app.core.auth import create_access_token
 from app.schema.user_schema import UserCreate, LoginRequest, TokenResponse
+from app.schema.login_schema import LoginRequest
 router = APIRouter()
 
 @router.post("/register")
@@ -33,9 +34,13 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
+
     user = db.query(User).filter(User.email == data.email).first()
 
-    if not user or not verify_password(data.password, user.hashed_password):
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    if not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
     token = create_access_token({"sub": user.email, "role": user.role})
