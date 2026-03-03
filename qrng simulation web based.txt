@@ -1,0 +1,72 @@
+qrng-management-system/
+
+├── backend/                # FastAPI or Flask source code
+
+│   ├── app/
+
+│   │   ├── api/            # API routes (user.py, admin.py, qrng.py)
+
+│   │   ├── core/           # Security (JWT, hashing), Config
+
+│   │   ├── models/         # Database models (User, Admin, Logs)
+
+│   │   ├── services/       # Quantum logic (Qiskit integration)
+
+│   │   ├── db/             # Database connection & sessions
+
+│   │   └── main.py         # Entry point for the backend
+
+│   ├── tests/              # Unit tests for API and Quantum logic
+
+│   ├── .env                # Environment variables (API keys, DB URLs)
+
+│   └── requirements.txt    # Python dependencies
+
+├── frontend/               # React or Next.js application
+
+│   ├── src/
+
+│   │   ├── components/     # Reusable UI (Buttons, Navbar)
+
+│   │   ├── pages/          # Dashboard, Login, Admin Panel
+
+│   │   ├── services/       # API calling logic (Axios/Fetch)
+
+│   │   └── hooks/          # Custom React hooks
+
+│   ├── public/             # Static assets (images, icons)
+
+│   └── package.json
+
+├── docker-compose.yml      # (Optional) To run DB and App together
+
+└── README.md               # Project documentation
+
+
+
+
+Frontend: React.js or Next.js (Modern, great for "Admin Dashboards").
+
+Backend: Python (Flask or FastAPI).
+
+Why Python? Most Quantum Computing SDKs (like IBM’s Qiskit) are Python-based.
+
+Database: PostgreSQL or MongoDB (To store user profiles and logs).
+
+Quantum Source: * Option A: Use IBM Quantum (Qiskit) to run a circuit on a real quantum computer or a simulator.
+
+Option B: Use a simulated quantum backend if you want faster results during development.
+
+
+
+Project Architecture
+
+Before you code, you need to understand the flow. Here is a high-level look at how your app will function:
+
+User/Admin Login: Authentication via JWT (JSON Web Tokens).
+
+User Dashboard: Request a random number (specify range/type).
+
+Quantum Engine: The backend sends a job to a Quantum Processor.
+
+Admin Panel: Monitor system health, manage users, and view generation logs.
