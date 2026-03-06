@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from app.api.user import router as user_router
+from app.api import analysis
 
 # Load environment variables from .env file
 load_dotenv()
@@ -12,3 +13,5 @@ app.include_router(user_router)
 @app.get("/")
 def root():
     return {"message": "QRNG Backend Running Successfully"}
+
+app.include_router(analysis.router)
