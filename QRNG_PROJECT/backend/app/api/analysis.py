@@ -21,7 +21,7 @@ router = APIRouter()
 @router.post("/analyze-randomness")
 def analyze_randomness(data: AnalysisRequest):
 
-    bits = generate_qubits(data.num_qubits)
+    bits = generate_qubits(data.sample_size)
 
     frequency = frequency_test(bits)
     entropy = entropy_test(bits)

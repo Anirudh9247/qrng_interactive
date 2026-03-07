@@ -1,8 +1,6 @@
 from app.utils.randomness_tests import frequency_test, entropy_test
 from app.services.quantum_service import generate_qubits
 from app.services.classical_rng_service import generate_classical_bits
-from app.utils.randomness_tests import frequency_test, entropy_test
-
 def run_randomness_analysis(bits):
 
     frequency = frequency_test(bits)
@@ -19,16 +17,14 @@ def run_experiment(generator, sample_size):
     else:
         bits = generate_classical_bits(sample_size)
 
-    freq = frequency_test(bits)
-    ent = entropy_test(bits)
+    zeros = bits.count("0")
+    ones = bits.count("1")
 
-    zeros = freq["zeros"]
-    ones = freq["ones"]
+    ent = entropy_test(bits)
 
     return {
         "generator": generator,
         "sample_size": sample_size,
         "zeros": zeros,
         "ones": ones,
-        "entropy": ent["entropy"]
-    }
+        "entropy":ent["entropy"]   }
