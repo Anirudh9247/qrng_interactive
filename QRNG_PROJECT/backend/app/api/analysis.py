@@ -9,7 +9,7 @@ from app.services.analysis_service import run_experiment
 
 from app.db.session import get_db
 from app.model.random_experiment import RandomExperiment
-
+from fastapi import HTTPException
 from app.utils.randomness_tests import (
     frequency_test,
     entropy_test,
@@ -54,3 +54,22 @@ def run_randomness_experiment(
     db.refresh(experiment)
 
     return result
+
+@router.get("/experiments")
+def get_experiments(db: Session = Depends(get_db)):
+
+    experiments = db.query(RandomExperiment).all()
+
+    return experiments
+
+@router.get("/experiment/{experiment_id}")
+def get_experiment(experiment_id: int, db: Session = Depends(get_db)):
+
+    experiment = db.query(RandomExperiment).filter(
+        RandomExperiment.id == experiment_id
+    ).first()
+
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    return experiment
