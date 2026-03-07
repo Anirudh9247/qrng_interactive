@@ -1,6 +1,10 @@
+from numpy import ones, zeros
+import matplotlib.pyplot as plt
 from app.utils.randomness_tests import frequency_test, entropy_test
 from app.services.quantum_service import generate_qubits
 from app.services.classical_rng_service import generate_classical_bits
+from app.utils.visualization import plot_entropy_progress
+from app.utils.visualization import plot_bit_distribution
 def run_randomness_analysis(bits):
 
     frequency = frequency_test(bits)
@@ -10,6 +14,15 @@ def run_randomness_analysis(bits):
         "frequency_test": frequency,
         "entropy_test": entropy
     }
+def plot_bit_distribution(zeros, ones):
+    labels = ["0s", "1s"]
+    values = [zeros, ones]
+
+    plt.bar(labels, values)
+    plt.title("Bit Distribution")
+    plt.ylabel("Count")
+    plt.show()
+
 def run_experiment(generator, sample_size):
 
     if generator == "quantum":
@@ -28,3 +41,4 @@ def run_experiment(generator, sample_size):
         "zeros": zeros,
         "ones": ones,
         "entropy":ent["entropy"]   }
+

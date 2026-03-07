@@ -1,9 +1,6 @@
 import matplotlib.pyplot as plt
 
-def plot_bit_distribution(bits):
-
-    zeros = bits.count('0')
-    ones = bits.count('1')
+def plot_bit_distribution(zeros, ones):
 
     labels = ['0', '1']
     values = [zeros, ones]
