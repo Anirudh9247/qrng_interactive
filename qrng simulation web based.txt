@@ -70,3 +70,39 @@ User Dashboard: Request a random number (specify range/type).
 Quantum Engine: The backend sends a job to a Quantum Processor.
 
 Admin Panel: Monitor system health, manage users, and view generation logs.
+
+1️⃣ Architecture
+
+Explain:
+
+FastAPI backend
+layered structure
+services + utilities + models
+2️⃣ Authentication
+
+Explain:
+
+JWT authentication
+password hashing
+protected endpoints
+3️⃣ Quantum Generator
+
+Explain:
+
+Qiskit circuit
+Hadamard gate
+superposition
+measurement randomness
+4️⃣ Randomness Analysis
+
+Explain:
+
+frequency test
+entropy measurement
+statistical randomness evaluation
+5️⃣ RNG Comparison
+
+Explain:
+
+quantum randomness vs classical randomness
+analysis results
