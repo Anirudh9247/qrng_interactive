@@ -39,3 +39,18 @@ def entropy_test(bits):
     return {
         "entropy": entropy
     }
+def chi_square_test(bits):
+
+    zeros = bits.count(0)
+    ones = bits.count(1)
+
+    total = zeros + ones
+    expected = total / 2
+
+    chi_square = ((zeros - expected) ** 2 / expected) + ((ones - expected) ** 2 / expected)
+
+    return {
+        "zeros": zeros,
+        "ones": ones,
+        "chi_square": chi_square
+    }
