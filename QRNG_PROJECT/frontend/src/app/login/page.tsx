@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export default function LoginPage() {
   const api = axios.create({
@@ -33,14 +33,20 @@ export default function LoginPage() {
         },
       });
 
-      // Save the JWT token to local storage
-      localStorage.setItem('token', response.data.access_token);
+      // NOTE: The preferred flow is to have the server set an HttpOnly, Secure,
+      // SameSite cookie containing the JWT. That way it is not accessible to JS
+      // and is protected from XSS. For now we are still using localStorage, but
+      // this is temporary and should be migrated ASAP. Ensure a strong CSP and
+      // other XSS mitigations until the server-side change is in place.
+      // TODO: Update backend /login endpoint to return token via Set-Cookie
+      // and remove all localStorage references (see api.ts interceptor below).
+      // localStorage.setItem('token', response.data.access_token);
       
       // Redirect to the dashboard upon success
       router.push('/dashboard');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error && 'response' in err
-        ? (err as { response: { data: { detail: string } } }).response?.data?.detail
+      const errorMessage = axios.isAxiosError(err)
+        ? (err as AxiosError)?.response?.data?.detail
         : 'Invalid credentials. Please try again.';
       setError(errorMessage || 'Invalid credentials. Please try again.');
     } finally {

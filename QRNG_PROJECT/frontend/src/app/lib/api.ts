@@ -11,7 +11,10 @@ const api = axios.create({
 // 2. Add an interceptor to automatically attach the JWT token to every request
 api.interceptors.request.use(
   (config) => {
-    // We will store the token in localStorage for now
+    // Right now the token is read from localStorage, which is vulnerable to
+    // XSS. Once the backend sets a secure HttpOnly cookie with the JWT, this
+    // interceptor can be removed or updated to rely on the cookie automatically.
+    // TODO: migrate authentication flow and delete all localStorage access.
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
     if (token && config.headers) {
