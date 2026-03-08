@@ -41,8 +41,8 @@ def entropy_test(bits):
     }
 def chi_square_test(bits):
 
-    zeros = bits.count(0)
-    ones = bits.count(1)
+    zeros = bits.count("0")
+    ones = bits.count("1")
 
     total = zeros + ones
     expected = total / 2

@@ -1,4 +1,4 @@
-from numpy import ones, zeros
+# from numpy import ones, zeros
 import matplotlib.pyplot as plt
 from app.utils.randomness_tests import frequency_test, entropy_test
 from app.services.quantum_service import generate_qubits
