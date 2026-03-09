@@ -14,35 +14,28 @@ export default function LoginPage() {
   const router = useRouter();
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    try {
-      // FastAPI expects Form Data for OAuth2
-      const formData = new FormData();
-      formData.append('username', email); // Note: FastAPI expects the key 'username' even if we use email
-      formData.append('password', password);
+  try {
+    const formData = new FormData();
+    formData.append('username', email);
+    formData.append('password', password);
 
-      const response = await api.post('/login', formData);
+    await api.post('/login', formData, {
+      withCredentials: true
+    });
 
-      // NOTE: The preferred flow is to have the server set an HttpOnly, Secure,
-      // SameSite cookie containing the JWT. That way it is not accessible to JS
-      // and is protected from XSS. For now we are still using localStorage, but
-      // this is temporary and should be migrated ASAP. Ensure a strong CSP and
-      // other XSS mitigations until the server-side change is in place.
-      // TODO: Update backend /login endpoint to return token via Set-Cookie
-      // and remove all localStorage references (see api.ts interceptor below).
-      localStorage.setItem('token', response.data.access_token);
-      // Redirect to the dashboard upon success
-      router.push('/dashboard');
-    } catch (error) {
-      const err = error as AxiosError<{ detail: string; }>;
-      setError(err.response?.data?.detail || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
+    router.push('/dashboard');
+
+  } catch (error) {
+    const err = error as AxiosError<{ detail: string }>;
+    setError(err.response?.data?.detail || 'Login failed');
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-4">

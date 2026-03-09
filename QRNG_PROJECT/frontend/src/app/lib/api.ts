@@ -1,12 +1,11 @@
-import axios from 'axios';
+import axios from "axios";
 
-// 1. Create a base Axios instance
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: "http://127.0.0.1:8000",
+  withCredentials: true
 });
+
+export default api;
 
 // 2. Add an interceptor to automatically attach the JWT token to every request
 api.interceptors.request.use(
@@ -26,5 +25,3 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-export default api;

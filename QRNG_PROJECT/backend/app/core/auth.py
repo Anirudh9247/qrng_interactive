@@ -39,12 +39,17 @@ def get_current_user(
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    payload = decode_token(access_token)
+    try:
+        payload = jwt.decode(access_token, cast(str, SECRET_KEY), algorithms=[ALGORITHM])
+        email = payload.get("sub")
 
-    user = db.query(User).filter(User.email == payload["sub"]).first()
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = db.query(User).filter(User.email == email).first()
 
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
     return user
 
