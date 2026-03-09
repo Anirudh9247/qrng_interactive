@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 
-class AnalysisRequest(BaseModel):
+
+class RandomnessRequest(BaseModel):
     sample_size: int

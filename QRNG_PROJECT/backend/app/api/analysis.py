@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.schema.analysis_schema import AnalysisRequest
+from app.schema.analysis_schema import RandomnessRequest
 from app.schema.experiment_schema import ExperimentRequest
 
 from app.services.quantum_service import generate_qubits
@@ -9,6 +9,7 @@ from app.services.analysis_service import run_experiment
 
 from app.db.session import get_db
 from app.model.random_experiment import RandomExperiment
+
 from fastapi import HTTPException
 from app.utils.randomness_tests import (
     frequency_test,
@@ -19,8 +20,7 @@ router = APIRouter()
 
 
 @router.post("/analyze-randomness")
-def analyze_randomness(data: AnalysisRequest):
-
+async def analyze_randomness(data: RandomnessRequest):
     bits = generate_qubits(data.sample_size)
 
     frequency = frequency_test(bits)
