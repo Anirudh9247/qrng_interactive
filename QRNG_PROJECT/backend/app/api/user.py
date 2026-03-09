@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException , Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -32,9 +32,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
     return {"message": "User registered successfully"}
 
-
 @router.post("/login")
 def login(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -51,10 +51,17 @@ def login(
         {"sub": user.email, "role": user.role}
     )
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    # Set JWT in HttpOnly cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,     # change to True in production (HTTPS)
+        samesite="lax",
+        max_age=3600
+    )
+
+    return {"message": "Login successful"}
 
 
 @router.get("/me")

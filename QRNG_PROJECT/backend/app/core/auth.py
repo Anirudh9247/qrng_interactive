@@ -22,28 +22,39 @@ SECRET_KEY = cast(str, SECRET_KEY)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, cast(str, SECRET_KEY), algorithm=ALGORITHM)
+from fastapi import Cookie
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def decode_token(token: str):
     try:
         payload = jwt.decode(token, cast(str, SECRET_KEY), algorithms=[ALGORITHM])
-        email: str = payload.get("sub") # type: ignore
-
-        if email is None:
-            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
-
+        return payload
     except JWTError:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    user = db.query(User).filter(User.email == email).first()
+def get_current_user(
+    access_token: str = Cookie(None),
+    db: Session = Depends(get_db)
+):
 
-    if user is None:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    payload = decode_token(access_token)
+
+    user = db.query(User).filter(User.email == payload["sub"]).first()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({"exp": expire})
+
+    encoded_jwt = jwt.encode(to_encode, cast(str, SECRET_KEY), algorithm=ALGORITHM)
+
+    return encoded_jwt

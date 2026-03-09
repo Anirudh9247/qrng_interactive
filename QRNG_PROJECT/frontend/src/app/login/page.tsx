@@ -3,20 +3,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from '../lib/api';
 
 export default function LoginPage() {
-  const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000',
-    headers: { 'Content-Type': 'application/json' },
-  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -27,11 +24,7 @@ export default function LoginPage() {
       formData.append('username', email); // Note: FastAPI expects the key 'username' even if we use email
       formData.append('password', password);
 
-      const response = await api.post('/login', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      const response = await api.post('/login', formData);
 
       // NOTE: The preferred flow is to have the server set an HttpOnly, Secure,
       // SameSite cookie containing the JWT. That way it is not accessible to JS
@@ -40,17 +33,16 @@ export default function LoginPage() {
       // other XSS mitigations until the server-side change is in place.
       // TODO: Update backend /login endpoint to return token via Set-Cookie
       // and remove all localStorage references (see api.ts interceptor below).
-      // localStorage.setItem('token', response.data.access_token);
-      
+      localStorage.setItem('token', response.data.access_token);
       // Redirect to the dashboard upon success
       router.push('/dashboard');
     } catch (error) {
-      const err = error as AxiosError<{ detail: string }>;
+      const err = error as AxiosError<{ detail: string; }>;
       setError(err.response?.data?.detail || 'Login failed');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-4">
