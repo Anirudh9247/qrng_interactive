@@ -1,3 +1,6 @@
+# QRNG Frontend Dashboard
+
+This is the frontend for the Quantum Random Number Generator Analysis Platform.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

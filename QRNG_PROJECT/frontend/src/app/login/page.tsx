@@ -44,11 +44,9 @@ export default function LoginPage() {
       
       // Redirect to the dashboard upon success
       router.push('/dashboard');
-    } catch (err: unknown) {
-      const errorMessage = axios.isAxiosError(err)
-        ? (err as AxiosError)?.response?.data?.detail
-        : 'Invalid credentials. Please try again.';
-      setError(errorMessage || 'Invalid credentials. Please try again.');
+    } catch (error) {
+      const err = error as AxiosError<{ detail: string }>;
+      setError(err.response?.data?.detail || 'Login failed');
     } finally {
       setLoading(false);
     }
