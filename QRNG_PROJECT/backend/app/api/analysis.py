@@ -21,6 +21,13 @@ router = APIRouter()
 
 @router.post("/analyze-randomness")
 async def analyze_randomness(data: RandomnessRequest):
+
+    if data.sample_size > 1_000_000:
+        raise HTTPException(
+            status_code=400,
+            detail="Sample size too large. Max allowed = 1,000,000"
+        )
+
     bits = generate_qubits(data.sample_size)
 
     frequency = frequency_test(bits)
