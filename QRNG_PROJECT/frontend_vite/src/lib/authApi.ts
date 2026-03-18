@@ -21,6 +21,9 @@ export const authApi = {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+    }
     return response.data;
   },
   
@@ -30,11 +33,9 @@ export const authApi = {
   },
 
   logout: async () => {
-    // Note: If the backend has a /logout endpoint that invalidates the cookie, call it here.
-    // Currently, typical stateless JWT setups just ask the client to drop it.
-    // We'll simulate a cleanup or optional backend call.
+    localStorage.removeItem('access_token');
     try {
-      await api.post('/logout'); // Assuming you might add this to FastAPI
+      await api.post('/logout'); 
     } catch {
       // Ignore if it doesn't exist yet
     }

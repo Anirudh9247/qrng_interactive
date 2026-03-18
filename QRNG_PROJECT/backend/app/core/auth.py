@@ -31,16 +31,20 @@ def decode_token(token: str):
     except JWTError:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
+
 def get_current_user(
     access_token: str = Cookie(None),
+    token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ):
+    actual_token = token or access_token
 
-    if not access_token:
+    if not actual_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        payload = jwt.decode(access_token, cast(str, SECRET_KEY), algorithms=[ALGORITHM])
+        payload = jwt.decode(actual_token, cast(str, SECRET_KEY), algorithms=[ALGORITHM])
         email = payload.get("sub")
 
     except JWTError:

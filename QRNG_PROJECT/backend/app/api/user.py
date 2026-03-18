@@ -61,7 +61,7 @@ def login(
         max_age=3600
     )
 
-    return {"message": "Login successful"}
+    return {"message": "Login successful", "access_token": access_token}
 
 
 @router.get("/me")
