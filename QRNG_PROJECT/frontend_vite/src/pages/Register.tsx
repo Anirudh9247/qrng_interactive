@@ -1,30 +1,31 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { UserPlus, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
-const Login = () => {
+const Register = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { login, loading, error } = useAuthStore();
+  const { register, loading, error } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!username || !email || !password) {
       toast.error('Please enter all fields');
       return;
     }
 
     try {
-      await login(email, password);
-      toast.success('Authentication successful');
-      navigate('/dashboard');
+      await register(username, email, password);
+      toast.success('Registration successful! Please log in.');
+      navigate('/login');
     } catch (err: any) {
-      // The store catches the actual error, but we can also toast if preferred
-      toast.error('Authentication failed');
+      // The store catches the actual error
+      toast.error('Registration failed');
     }
   };
 
@@ -49,8 +50,8 @@ const Login = () => {
           >
             <Sparkles className="w-8 h-8 text-quantum-secondary" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">QRNG Nexus</h1>
-          <p className="text-gray-400 mt-2 text-sm">Secure Access Terminal</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Access Granted</h1>
+          <p className="text-gray-400 mt-2 text-sm">Create New Access Credentials</p>
         </div>
 
         {error && (
@@ -62,6 +63,21 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5" htmlFor="username">
+                Scientist Alias (Username)
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Dr. Quantum"
+                className="w-full bg-quantum-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-quantum-primary/50 focus:border-transparent transition-all"
+                required
+                disabled={loading}
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5" htmlFor="email">
                 Quantum Credentials (Email)
@@ -78,14 +94,9 @@ const Login = () => {
               />
             </div>
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-sm font-medium text-gray-300" htmlFor="password">
-                  Security Key (Password)
-                </label>
-                <a href="#" className="text-xs text-quantum-accent hover:text-quantum-secondary transition-colors">
-                  Forgot key?
-                </a>
-              </div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5" htmlFor="password">
+                Security Key (Password)
+              </label>
               <input
                 id="password"
                 type="password"
@@ -99,17 +110,6 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              type="checkbox"
-              className="h-4 w-4 bg-quantum-900 border-white/20 rounded accent-quantum-primary focus:ring-quantum-primary"
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
-              Maintain connection
-            </label>
-          </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -118,31 +118,25 @@ const Login = () => {
             {loading ? (
               <>
                 <Loader2 className="animate-spin h-5 w-5" />
-                <span>Authenticating sequence...</span>
+                <span>Generating Identity...</span>
               </>
             ) : (
               <>
-                <LogIn className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
-                <span>Initialize Terminal</span>
+                <UserPlus className="h-5 w-5 group-hover:-translate-y-1 transition-transform" />
+                <span>Create Registration</span>
               </>
             )}
           </button>
+          
+          <div className="text-center mt-4">
+             <Link to="/login" className="text-sm text-gray-400 hover:text-quantum-accent transition-colors">
+                Already have credentials? Return to login.
+             </Link>
+          </div>
         </form>
-
-        <div className="mt-8 text-center border-t border-white/10 pt-6">
-          <p className="text-sm text-gray-400 mb-2">
-            Don't have a key?{' '}
-            <Link to="/register" className="text-quantum-accent hover:text-quantum-secondary transition-colors font-medium">
-              Register here
-            </Link>
-          </p>
-          <p className="text-xs text-gray-500">
-            WARNING: Unauthorized access to quantum resources is strictly monitored.
-          </p>
-        </div>
       </motion.div>
     </div>
   );
 };
 
-export default Login;
+export default Register;

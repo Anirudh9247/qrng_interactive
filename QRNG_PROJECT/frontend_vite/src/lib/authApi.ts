@@ -1,6 +1,15 @@
 import { api } from './api';
 
 export const authApi = {
+  register: async (username: string, email: string, password: string) => {
+    const response = await api.post('/register', {
+      username,
+      email,
+      password,
+    });
+    return response.data;
+  },
+
   login: async (username: string, password: string) => {
     // FastAPI OAuth2PasswordRequestForm expects form data
     const formData = new URLSearchParams();
