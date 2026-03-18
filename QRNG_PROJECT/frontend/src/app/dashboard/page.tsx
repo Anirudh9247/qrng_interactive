@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Activity, Cpu, Zap, LogOut, Database } from 'lucide-react';
 import Link from 'next/link';
-import api from '../../lib/api'; // Adjust the path as needed based on your folder structure
-
+import { AxiosError } from 'axios';
+import api from '../../lib/api';
 // Define the shape of the data we expect from FastAPI
 interface ExperimentResult {
   generator: string;
@@ -35,7 +35,8 @@ export default function DashboardPage() {
         sample_size: Number(sampleSize)
       });
       setResult(response.data);
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as AxiosError;
       if (err.response?.status === 401) {
         router.push('/login'); 
       } else {
@@ -98,8 +99,9 @@ export default function DashboardPage() {
 
              <div className="space-y-4">
                <div>
-                 <label className="block text-sm font-medium text-slate-400 mb-1">Generator Type</label>
+                 <label htmlFor="generator" className="block text-sm font-medium text-slate-400 mb-1">Generator Type</label>
                  <select 
+                   id="generator"
                    value={generator} 
                    onChange={(e) => setGenerator(e.target.value)}
                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-cyan-500/50 outline-none"
@@ -110,8 +112,9 @@ export default function DashboardPage() {
                </div>
 
                <div>
-                 <label className="block text-sm font-medium text-slate-400 mb-1">Sample Size (Bits)</label>
+                 <label htmlFor="sampleSize" className="block text-sm font-medium text-slate-400 mb-1">Sample Size (Bits)</label>
                  <input 
+                   id="sampleSize"
                    type="number" 
                    min="1"
                    max="1000"
@@ -149,12 +152,12 @@ export default function DashboardPage() {
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
                   <p className="text-slate-400 text-sm font-medium mb-1">Zero Bits</p>
                   <p className="text-3xl font-bold text-white">{result.zeros}</p>
-                  <p className="text-xs text-slate-500 mt-2">Total '0' measurements</p>
+                  <p className="text-xs text-slate-500 mt-2">Total &quot;0&quot; measurements</p>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
                   <p className="text-slate-400 text-sm font-medium mb-1">One Bits</p>
                   <p className="text-3xl font-bold text-white">{result.ones}</p>
-                  <p className="text-xs text-slate-500 mt-2">Total '1' measurements</p>
+                  <p className="text-xs text-slate-500 mt-2">Total &quot;1&quot; measurements</p>
                 </div>
               </div>
 
