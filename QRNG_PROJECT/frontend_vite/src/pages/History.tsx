@@ -1,25 +1,46 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Download, Search, Trash2, Database, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useQRNGStore } from '../store/useStore';
+import { useQRNGStore } from '../store/qrngStore';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import type { ExperimentResponse } from '../lib/types';
 
 const ITEMS_PER_PAGE = 20;
 
+// Helper to generate a deterministic looking hash based on the experiment parameters since the backend doesn't provide one
+const computeHashSync = (data: ExperimentResponse) => {
+  // A simplistic mock hash approach for visual purposes in a table rendering synchronously
+  const stringToHash = `${data.id}-${data.zeros}-${data.ones}-${data.entropy}`;
+  let hash = 0;
+  for (let i = 0; i < stringToHash.length; i++) {
+    const char = stringToHash.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0') + Math.abs(hash * 31).toString(16).padStart(16, '0');
+};
+
 const History = () => {
-  const { history, clearHistory } = useQRNGStore();
+  const { history, clearHistory, fetchHistory } = useQRNGStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   // Filtering functionality
   const filteredHistory = useMemo(() => {
     return history.filter((item) => {
       const searchLower = searchTerm.toLowerCase();
+      // Add hash dynamically for searchability parity with older implementation
+      const dynamicHash = computeHashSync(item);
       return (
-        item.hash.toLowerCase().includes(searchLower) ||
-        item.number.toString().includes(searchLower) ||
-        format(item.timestamp, 'yyyy-MM-dd HH:mm:ss').includes(searchLower)
+        dynamicHash.toLowerCase().includes(searchLower) ||
+        item.id.toString().includes(searchLower) ||
+        item.ones.toString().includes(searchLower) ||
+        item.zeros.toString().includes(searchLower)
       );
     });
   }, [history, searchTerm]);
@@ -37,11 +58,11 @@ const History = () => {
       return;
     }
 
-    const headers = ['ID', 'Number', 'Timestamp', 'Entropy Score', 'Hash'];
+    const headers = ['ID', 'Zeros', 'Ones', 'Entropy', 'Visual Hash'];
     const csvContent = [
       headers.join(','),
       ...history.map((row) => 
-        `"${row.id}","${row.number}","${new Date(row.timestamp).toISOString()}","${row.entropyScore}","${row.hash}"`
+        `"${row.id}","${row.zeros}","${row.ones}","${row.entropy}","${computeHashSync(row)}"`
       )
     ].join('\n');
 
@@ -122,55 +143,53 @@ const History = () => {
             <thead className="sticky top-0 bg-quantum-900/90 backdrop-blur border-b border-white/10 z-10">
               <tr className="text-xs uppercase tracking-wider text-gray-500">
                 <th className="py-4 pl-6 font-medium">Index ID</th>
-                <th className="py-4 font-medium">Quantum State</th>
-                <th className="py-4 font-medium">Timestamp</th>
+                <th className="py-4 font-medium">Bits: 0 / 1</th>
                 <th className="py-4 font-medium">Entropy Quality</th>
-                <th className="py-4 pr-6 font-medium">Full Hash Signature</th>
+                <th className="py-4 pr-6 font-medium text-right">Signature</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 relative bg-transparent">
               <AnimatePresence>
                 {currentItems.length > 0 ? (
-                  currentItems.map((item, index) => (
+                  currentItems.map((item, index) => {
+                    const hashStr = computeHashSync(item);
+                    return (
                     <motion.tr 
-                      key={item.id}
+                      key={`history-${item.id}`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.03, duration: 0.2 }}
                       className="hover:bg-white/[0.03] transition-colors group"
                     >
                       <td className="py-3 pl-6">
-                        <span className="text-xs text-gray-500 font-mono">
-                          {item.id}
+                        <span className="text-sm font-bold text-emerald-400 font-mono">
+                          #{item.id}
                         </span>
                       </td>
-                      <td className="py-3 text-emerald-400 font-mono font-bold text-base">
-                        {item.number}
-                      </td>
-                      <td className="py-3 text-gray-300 text-sm">
-                        {format(item.timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}
+                      <td className="py-3 text-gray-300 font-mono text-base">
+                        {item.zeros} / {item.ones}
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-24 h-1.5 bg-quantum-900 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-quantum-secondary to-quantum-primary"
-                              style={{ width: `${item.entropyScore}%` }}
+                              style={{ width: `${item.entropy * 100}%` }}
                             />
                           </div>
-                          <span className="text-xs text-gray-400">{item.entropyScore}%</span>
+                          <span className="text-xs text-gray-400">{(item.entropy * 100).toFixed(2)}%</span>
                         </div>
                       </td>
-                      <td className="py-3 pr-6">
-                        <code className="text-xs font-mono text-quantum-accent/50 group-hover:text-quantum-accent/90 transition-colors w-[250px] inline-block truncate" title={item.hash}>
-                          {item.hash}
+                      <td className="py-3 pr-6 text-right">
+                        <code className="text-xs font-mono text-quantum-accent/50 group-hover:text-quantum-accent/90 transition-colors inline-block truncate" title={hashStr}>
+                          {hashStr.substring(0, 16)}...
                         </code>
                       </td>
                     </motion.tr>
-                  ))
+                  )})
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center text-gray-500 text-sm">
+                    <td colSpan={4} className="py-16 text-center text-gray-500 text-sm">
                       <div className="flex flex-col items-center justify-center opacity-60">
                         <Database className="h-12 w-12 text-gray-400 mb-3" />
                         <p>No matching quantum records found.</p>

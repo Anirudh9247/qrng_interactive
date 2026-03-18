@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, QRNGState, QRNGData } from '../lib/types';
+import type { AuthState, QRNGState, QRNGData } from '../lib/types';
 
 // Simple hash generator for mock data
 const generateHash = () => {

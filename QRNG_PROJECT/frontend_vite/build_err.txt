@@ -1,0 +1,17 @@
+
+> frontend_vite@0.0.0 build
+> tsc -b && vite build
+
+[31mfailed to load config from E:\MINI PROJEC\QRNG_PROJECT\frontend_vite\vite.config.ts[39m
+[31merror during build:
+Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './internal' is not defined by "exports" in E:\MINI PROJEC\QRNG_PROJECT\frontend_vite\node_modules\vite\package.json imported from E:\MINI PROJEC\QRNG_PROJECT\frontend_vite\node_modules\@vitejs\plugin-react\dist\index.js
+    at exportsNotFound (node:internal/modules/esm/resolve:314:10)
+    at packageExportsResolve (node:internal/modules/esm/resolve:662:9)
+    at packageResolve (node:internal/modules/esm/resolve:774:12)
+    at moduleResolve (node:internal/modules/esm/resolve:859:18)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:719:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:736:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:765:52)
+    at #resolve (node:internal/modules/esm/loader:701:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:621:35)[39m

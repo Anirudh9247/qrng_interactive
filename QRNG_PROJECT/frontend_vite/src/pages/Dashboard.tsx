@@ -1,22 +1,37 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Activity, Cpu, Database, Zap } from 'lucide-react';
-import { useQRNGStore } from '../store/useStore';
+import { useQRNGStore } from '../store/qrngStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import type { ExperimentResponse } from '../lib/types';
+
+// Helper for UI flair
+const computeHash = async (data: any) => {
+  const msgUint8 = new TextEncoder().encode(JSON.stringify(data));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
 const Dashboard = () => {
-  const { history, isGenerating, generateNumber } = useQRNGStore();
-  const [currentNumber, setCurrentNumber] = useState<number | null>(null);
+  const { history, isGenerating, generateNumber, fetchHistory } = useQRNGStore();
+  const [currentResult, setCurrentResult] = useState<ExperimentResponse | null>(null);
   const [animatedNumber, setAnimatedNumber] = useState(0);
+  const [currentHash, setCurrentHash] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const handleGenerate = async () => {
     try {
-      const data = await generateNumber();
-      setCurrentNumber(data.number);
+      const data = await generateNumber(1000);
+      setCurrentResult(data);
+      const hash = await computeHash(data);
+      setCurrentHash(hash);
       toast.success('Quantum state collapsed successfully');
     } catch (error) {
       toast.error('Failed to access quantum source');
@@ -30,17 +45,17 @@ const Dashboard = () => {
       interval = setInterval(() => {
         setAnimatedNumber(Math.floor(Math.random() * 1000000));
       }, 50) as unknown as number;
-    } else if (currentNumber !== null) {
-      setAnimatedNumber(currentNumber);
+    } else if (currentResult !== null) {
+      setAnimatedNumber(currentResult.ones); // using 'ones' as the visual number to show variance
     }
     return () => clearInterval(interval);
-  }, [isGenerating, currentNumber]);
+  }, [isGenerating, currentResult]);
 
   // Chart data formatting
   const chartData = [...history].reverse().slice(-15).map(item => ({
-    time: format(item.timestamp, 'HH:mm:ss'),
-    entropy: item.entropyScore,
-    value: item.number,
+    time: `ID:${item.id}`,
+    entropy: item.entropy * 100, // Assuming entropy is 0-1, converting to 0-100%
+    value: item.ones,
   }));
 
   const recentActivity = history.slice(0, 5);
@@ -78,7 +93,7 @@ const Dashboard = () => {
             <div>
               <p className="text-sm text-gray-400 font-medium">Avg. Entropy</p>
               <h3 className="text-2xl font-bold text-white">
-                {history.length > 0 ? (history.reduce((acc, curr) => acc + curr.entropyScore, 0) / history.length).toFixed(1) : '0.0'}
+                {history.length > 0 ? ((history.reduce((acc, curr) => acc + curr.entropy, 0) / history.length) * 100).toFixed(2) : '0.00'}
                 <span className="text-xs font-normal text-gray-500 ml-1">%</span>
               </h3>
             </div>
@@ -130,14 +145,14 @@ const Dashboard = () => {
                   transition={{ duration: 0.2 }}
                   className="text-6xl sm:text-7xl font-mono font-bold text-white tracking-widest leading-none drop-shadow-[0_0_25px_rgba(0,240,255,0.6)]"
                 >
-                  {animatedNumber.toString().padStart(6, '0')}
+                  {animatedNumber.toString().padStart(4, '0')}
                 </motion.div>
               </AnimatePresence>
             </div>
             
-            {history[0] && !isGenerating && (
+            {currentHash && !isGenerating && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-xs font-mono text-quantum-accent/80 truncate max-w-[250px] mx-auto opacity-70">
-                HASH: {history[0].hash.substring(0, 32)}...
+                HASH: {currentHash.substring(0, 32)}...
               </motion.div>
             )}
           </div>
@@ -227,10 +242,9 @@ const Dashboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-gray-500">
-                <th className="pb-4 pl-4 font-medium">Value</th>
-                <th className="pb-4 font-medium">Timestamp</th>
+                <th className="pb-4 pl-4 font-medium">Record ID</th>
+                <th className="pb-4 font-medium">Bits: 0 / 1</th>
                 <th className="pb-4 font-medium">Entropy Quality</th>
-                <th className="pb-4 pr-4 font-medium text-right">Hash Signature</th>
               </tr>
             </thead>
             <tbody>
@@ -238,35 +252,30 @@ const Dashboard = () => {
                 {recentActivity.length > 0 ? (
                   recentActivity.map((item, index) => (
                     <motion.tr 
-                      key={item.id}
-                      initial={{ opacity: 0, autoAlpha: 0, x: -20 }}
-                      animate={{ opacity: 1, autoAlpha: 1, x: 0 }}
+                      key={`recent-${item.id}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="border-b border-white/5 hover:bg-white/5 transition-colors group"
                     >
-                      <td className="py-4 pl-4 text-emerald-400 font-mono font-bold text-lg">{item.number}</td>
-                      <td className="py-4 text-gray-300 text-sm">{format(item.timestamp, 'MMM dd, HH:mm:ss.SSS')}</td>
-                      <td className="py-4">
+                      <td className="py-4 pl-4 text-emerald-400 font-mono font-bold text-lg">#{item.id}</td>
+                      <td className="py-4 text-gray-300 text-sm font-mono">{item.zeros} / {item.ones}</td>
+                      <td className="py-4 pr-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-full max-w-[100px] h-2 bg-quantum-900 rounded-full overflow-hidden">
+                          <div className="w-full max-w-[150px] h-2 bg-quantum-900 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-quantum-secondary to-quantum-primary"
-                              style={{ width: `${item.entropyScore}%` }}
+                              style={{ width: `${item.entropy * 100}%` }}
                             />
                           </div>
-                          <span className="text-xs text-gray-400">{item.entropyScore}%</span>
+                          <span className="text-xs text-gray-400">{(item.entropy * 100).toFixed(2)}%</span>
                         </div>
-                      </td>
-                      <td className="py-4 pr-4 text-right">
-                        <code className="text-xs font-mono text-quantum-accent/70 bg-quantum-accent/10 py-1 px-2 rounded group-hover:text-quantum-accent transition-colors">
-                          {item.hash.substring(0, 16)}...
-                        </code>
                       </td>
                     </motion.tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-gray-500 text-sm">
+                    <td colSpan={3} className="py-8 text-center text-gray-500 text-sm">
                       No quantum events recorded in the current session.
                     </td>
                   </tr>

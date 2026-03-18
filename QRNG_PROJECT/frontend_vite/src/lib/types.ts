@@ -1,27 +1,34 @@
 export interface User {
-  id: string;
+  id: string; // The backend uses int for DB but token relies on email sub; we can simplify or adapt
   email: string;
-  name: string;
-}
-
-export interface QRNGData {
-  id: string;
-  number: number;
-  hash: string;
-  timestamp: number;
-  entropyScore: number;
+  username: string; // From backend schema
+  role: string;
 }
 
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  checkAuth: () => Promise<void>;
+}
+
+export interface ExperimentResponse {
+  id: number;
+  generator: string;
+  sample_size: number;
+  zeros: number;
+  ones: number;
+  entropy: number;
 }
 
 export interface QRNGState {
-  history: QRNGData[];
+  history: ExperimentResponse[];
   isGenerating: boolean;
-  generateNumber: () => Promise<QRNGData>;
+  error: string | null;
+  generateNumber: (sampleSize?: number) => Promise<ExperimentResponse>;
+  fetchHistory: () => Promise<void>;
   clearHistory: () => void;
 }
