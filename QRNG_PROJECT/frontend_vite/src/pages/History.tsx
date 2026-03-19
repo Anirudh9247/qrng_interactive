@@ -4,22 +4,8 @@ import { useQRNGStore } from '../store/qrngStore';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import type { ExperimentResponse } from '../lib/types';
 
 const ITEMS_PER_PAGE = 20;
-
-// Helper to generate a deterministic looking hash based on the experiment parameters since the backend doesn't provide one
-const computeHashSync = (data: ExperimentResponse) => {
-  // A simplistic mock hash approach for visual purposes in a table rendering synchronously
-  const stringToHash = `${data.id}-${data.zeros}-${data.ones}-${data.entropy}`;
-  let hash = 0;
-  for (let i = 0; i < stringToHash.length; i++) {
-    const char = stringToHash.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(16).padStart(16, '0') + Math.abs(hash * 31).toString(16).padStart(16, '0');
-};
 
 const History = () => {
   const { history, clearHistory, fetchHistory } = useQRNGStore();
@@ -34,10 +20,7 @@ const History = () => {
   const filteredHistory = useMemo(() => {
     return history.filter((item) => {
       const searchLower = searchTerm.toLowerCase();
-      // Add hash dynamically for searchability parity with older implementation
-      const dynamicHash = computeHashSync(item);
       return (
-        dynamicHash.toLowerCase().includes(searchLower) ||
         item.id.toString().includes(searchLower) ||
         item.ones.toString().includes(searchLower) ||
         item.zeros.toString().includes(searchLower)
@@ -58,11 +41,11 @@ const History = () => {
       return;
     }
 
-    const headers = ['ID', 'Zeros', 'Ones', 'Entropy', 'Visual Hash'];
+    const headers = ['ID', 'Zeros', 'Ones', 'Entropy'];
     const csvContent = [
       headers.join(','),
       ...history.map((row) => 
-        `"${row.id}","${row.zeros}","${row.ones}","${row.entropy}","${computeHashSync(row)}"`
+        `"${row.id}","${row.zeros}","${row.ones}","${row.entropy}"`
       )
     ].join('\n');
 
@@ -144,15 +127,13 @@ const History = () => {
               <tr className="text-xs uppercase tracking-wider text-gray-500">
                 <th className="py-4 pl-6 font-medium">Index ID</th>
                 <th className="py-4 font-medium">Bits: 0 / 1</th>
-                <th className="py-4 font-medium">Entropy Quality</th>
-                <th className="py-4 pr-6 font-medium text-right">Signature</th>
+                <th className="py-4 pr-6 font-medium text-right">Entropy Quality</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 relative bg-transparent">
               <AnimatePresence>
                 {currentItems.length > 0 ? (
                   currentItems.map((item, index) => {
-                    const hashStr = computeHashSync(item);
                     return (
                     <motion.tr 
                       key={`history-${item.id}`}
@@ -180,16 +161,11 @@ const History = () => {
                           <span className="text-xs text-gray-400">{(item.entropy * 100).toFixed(2)}%</span>
                         </div>
                       </td>
-                      <td className="py-3 pr-6 text-right">
-                        <code className="text-xs font-mono text-quantum-accent/50 group-hover:text-quantum-accent/90 transition-colors inline-block truncate" title={hashStr}>
-                          {hashStr.substring(0, 16)}...
-                        </code>
-                      </td>
                     </motion.tr>
                   )})
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-16 text-center text-gray-500 text-sm">
+                    <td colSpan={3} className="py-16 text-center text-gray-500 text-sm">
                       <div className="flex flex-col items-center justify-center opacity-60">
                         <Database className="h-12 w-12 text-gray-400 mb-3" />
                         <p>No matching quantum records found.</p>

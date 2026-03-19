@@ -55,7 +55,7 @@ const Dashboard = () => {
   const chartData = [...history].reverse().slice(-15).map(item => ({
     time: `ID:${item.id}`,
     entropy: item.entropy * 100, // Assuming entropy is 0-1, converting to 0-100%
-    value: item.ones,
+    value: item.entropy * 100,
   }));
 
   const recentActivity = history.slice(0, 5);
@@ -152,7 +152,7 @@ const Dashboard = () => {
             
             {currentHash && !isGenerating && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-xs font-mono text-quantum-accent/80 truncate max-w-[250px] mx-auto opacity-70">
-                HASH: {currentHash.substring(0, 32)}...
+                SESSION HASH (DEMO): {currentHash.substring(0, 32)}...
               </motion.div>
             )}
           </div>
