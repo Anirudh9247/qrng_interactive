@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Activity, Database, Zap } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+import { Activity, Database, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -12,12 +11,6 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: Activity },
@@ -80,21 +73,7 @@ const Layout = ({ children }: LayoutProps) => {
               })}
             </nav>
 
-            {/* User & Actions */}
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex flex-col items-end">
-                <span className="text-sm font-medium text-white">{user?.username}</span>
-                <span className="text-xs text-gray-400 capitalize">{user?.role || 'Scientist'}</span>
-              </div>
-              
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                title="Logout"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
+            {/* Removed User & Actions section */}
           </div>
         </div>
       </header>
