@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Database, Activity } from 'lucide-react';
