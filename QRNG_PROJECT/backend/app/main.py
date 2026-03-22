@@ -4,8 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware # Add this import
 
 from app.api.analysis import router as analysis_router
 from app.api.comparision import router as comparison_router
+from app.db.session import engine
+from app.model.random_experiment import Base
 
 load_dotenv()
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Secure QRNG API")
 

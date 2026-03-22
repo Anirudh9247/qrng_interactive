@@ -33,12 +33,17 @@ def run_experiment(generator, sample_size):
     else:
         bits = generate_classical_bits(sample_size)
 
+    # 🔥 FIX: normalize all to string
+    bits = [str(b) for b in bits]
+
     zeros = bits.count("0")
     ones = bits.count("1")
 
     ent = entropy_test(bits)
     chi_square = chi_square_test(bits)
+
     plot_path = save_bit_distribution_plot(zeros, ones)
+
     return {
         "generator": generator,
         "sample_size": sample_size,
@@ -47,8 +52,30 @@ def run_experiment(generator, sample_size):
         "entropy": ent["entropy"],
         "chi_square": chi_square["chi_square"],
         "distribution_plot": plot_path
-        
-        }
+    }
+    if generator == "quantum":
+        bits = generate_qubits(sample_size)
+    else:
+        bits = generate_classical_bits(sample_size)
+
+    # Handle both int + string safely
+    zeros = bits.count(0) + bits.count("0")
+    ones = bits.count(1) + bits.count("1")
+
+    ent = entropy_test(bits)
+    chi_square = chi_square_test(bits)
+
+    plot_path = save_bit_distribution_plot(zeros, ones)
+
+    return {
+        "generator": generator,
+        "sample_size": sample_size,
+        "zeros": zeros,
+        "ones": ones,
+        "entropy": ent["entropy"],
+        "chi_square": chi_square["chi_square"],
+        "distribution_plot": plot_path
+    }
 def compare_rng(sample_size):
 
     quantum_bits = generate_qubits(sample_size)
