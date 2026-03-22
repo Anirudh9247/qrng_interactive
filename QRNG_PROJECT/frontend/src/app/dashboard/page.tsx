@@ -38,10 +38,7 @@ export default function DashboardPage() {
     const axiosError = error as AxiosError;
     const status = axiosError?.response?.status;
 
-    if (status === 401) {
-      window.location.href = '/login';
-      return;
-    }
+
 
     setResult(null);
     setError('Failed to run experiment. Ensure your backend is running.');

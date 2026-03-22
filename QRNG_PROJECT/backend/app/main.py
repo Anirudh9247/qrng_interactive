@@ -12,9 +12,10 @@ app = FastAPI(title="Secure QRNG API")
 # --- Add this CORS block ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"], # Allows your Vite frontend
-    allow_methods=["*"], # Allows all methods (POST, GET, etc.)
-    allow_headers=["*"], # Allows all headers
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 # ---------------------------
 
