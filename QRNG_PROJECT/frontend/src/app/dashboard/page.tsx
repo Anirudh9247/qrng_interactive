@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AxiosError } from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Activity, Cpu, Zap, Database } from 'lucide-react';
+import { Activity, Cpu, Zap, Database, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import api from '../lib/api';
 
@@ -23,35 +23,32 @@ export default function DashboardPage() {
   const [result, setResult] = useState<ExperimentResult | null>(null);
 
   const handleRunExperiment = async () => {
-  setLoading(true);
-  setError('');
-
-  try {
-    const response = await api.post('/run-experiment', {
-      generator,
-      sample_size: Number(sampleSize),
-    });
-
+    setLoading(true);
     setError('');
-    setResult(response.data);
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    const status = axiosError?.response?.status;
 
+    try {
+      const response = await api.post('/run-experiment', {
+        generator,
+        sample_size: Number(sampleSize),
+      });
 
-
-    setResult(null);
-    setError('Failed to run experiment. Ensure your backend is running.');
-  } finally {
-    setLoading(false);
-  }
-};
+      setError('');
+      setResult(response.data);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError?.response?.status;
+      setResult(null);
+      setError('Failed to run experiment. Ensure your backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const chartData = result
     ? [
-        { name: 'Zeros (0)', count: result.zeros },
-        { name: 'Ones (1)', count: result.ones },
-      ]
+      { name: 'Zeros (0)', count: result.zeros },
+      { name: 'Ones (1)', count: result.ones },
+    ]
     : [];
 
   return (
@@ -63,6 +60,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard/compare"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors border border-slate-700"
+          >
+            <BarChart2 className="w-4 h-4" />
+            Compare RNG
+          </Link>
           <Link
             href="/history"
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors border border-slate-700"

@@ -1,5 +1,10 @@
 # from numpy import ones, zeros
+import os
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+load_dotenv()
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 from app.utils.randomness_tests import frequency_test, entropy_test
 from app.services.quantum_service import generate_qubits
 from app.services.classical_rng_service import generate_classical_bits
@@ -51,31 +56,9 @@ def run_experiment(generator, sample_size):
         "ones": ones,
         "entropy": ent["entropy"],
         "chi_square": chi_square["chi_square"],
-        "distribution_plot": plot_path
+        "distribution_plot": f"{BACKEND_URL}/{plot_path.replace(chr(92), '/')}"
     }
-    if generator == "quantum":
-        bits = generate_qubits(sample_size)
-    else:
-        bits = generate_classical_bits(sample_size)
 
-    # Handle both int + string safely
-    zeros = bits.count(0) + bits.count("0")
-    ones = bits.count(1) + bits.count("1")
-
-    ent = entropy_test(bits)
-    chi_square = chi_square_test(bits)
-
-    plot_path = save_bit_distribution_plot(zeros, ones)
-
-    return {
-        "generator": generator,
-        "sample_size": sample_size,
-        "zeros": zeros,
-        "ones": ones,
-        "entropy": ent["entropy"],
-        "chi_square": chi_square["chi_square"],
-        "distribution_plot": plot_path
-    }
 def compare_rng(sample_size):
 
     quantum_bits = generate_qubits(sample_size)
@@ -92,5 +75,5 @@ def compare_rng(sample_size):
     return {
         "quantum_entropy": quantum_entropy,
         "classical_entropy": classical_entropy,
-        "comparison_plot": plot_path
+        "comparison_plot": f"{BACKEND_URL}/{plot_path.replace(chr(92), '/')}"
     }
