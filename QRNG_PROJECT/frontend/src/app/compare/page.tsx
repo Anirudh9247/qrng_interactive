@@ -6,7 +6,25 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } fro
 interface ComparisonResult {
   quantum_entropy: number;
   classical_entropy: number;
+  quantum_bits: string;
+  classical_bits: string;
 }
+
+const formatBits = (bits: string, maxLen = 64) => {
+  if (!bits) return "";
+  if (bits.length <= maxLen) return bits;
+  return `${bits.slice(0, maxLen)}...`;
+};
+
+const bitsToNumber = (bits: string, chunk = 32) => {
+  if (!bits || bits.length < 1) return null;
+  const slice = bits.slice(0, chunk);
+  try {
+    return Number.parseInt(slice, 2);
+  } catch {
+    return null;
+  }
+};
 
 export default function ComparePage() {
   const [result, setResult] = useState<ComparisonResult | null>(null);
@@ -48,6 +66,16 @@ export default function ComparePage() {
           <div className="bg-gray-800 rounded-xl p-6">
             <p className="text-gray-400 text-sm">Classical Entropy</p>
             <p className="text-3xl font-bold text-blue-400">{result.classical_entropy?.toFixed(4)}</p>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-6">
+            <p className="text-gray-400 text-sm">Quantum sample number (first 32 bits)</p>
+            <p className="text-2xl font-bold text-cyan-400">{bitsToNumber(result.quantum_bits)}</p>
+            <p className="text-gray-400 text-xs break-words mt-2">{formatBits(result.quantum_bits, 80)}</p>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-6">
+            <p className="text-gray-400 text-sm">Classical sample number (first 32 bits)</p>
+            <p className="text-2xl font-bold text-blue-400">{bitsToNumber(result.classical_bits)}</p>
+            <p className="text-gray-400 text-xs break-words mt-2">{formatBits(result.classical_bits, 80)}</p>
           </div>
           <div className="bg-gray-800 rounded-xl p-6 col-span-2 h-64">
             <ResponsiveContainer width="100%" height="100%">

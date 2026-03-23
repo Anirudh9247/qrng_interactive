@@ -1,8 +1,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # Add this import
+from fastapi.middleware.cors import CORSMiddleware 
 from fastapi.staticfiles import StaticFiles
-
 from app.api.analysis import router as analysis_router
 from app.api.comparision import router as comparison_router
 from app.db.session import engine
@@ -23,7 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # ---------------------------
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(analysis_router)

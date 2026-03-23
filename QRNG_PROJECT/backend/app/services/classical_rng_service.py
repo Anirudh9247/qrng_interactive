@@ -1,10 +1,6 @@
 import random
 
+random.seed(42)
+
 def generate_classical_bits(n: int = 10):
-
-    bits = []
-
-    for _ in range(n):
-        bits.append(random.randint(0,1))
-
-    return bits
+    return [random.randint(0,1) for _ in range(n)]
