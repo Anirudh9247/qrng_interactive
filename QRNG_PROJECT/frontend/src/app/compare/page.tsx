@@ -1,10 +1,15 @@
 "use client";
 import { useState } from "react";
-import axios from "@/lib/api";
+import axios from "@/app/lib/api";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+interface ComparisonResult {
+  quantum_entropy: number;
+  classical_entropy: number;
+}
+
 export default function ComparePage() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ComparisonResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

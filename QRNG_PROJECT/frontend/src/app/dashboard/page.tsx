@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { AxiosError } from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Activity, Cpu, Zap, Database, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
@@ -34,9 +33,7 @@ export default function DashboardPage() {
 
       setError('');
       setResult(response.data);
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      const status = axiosError?.response?.status;
+    } catch {
       setResult(null);
       setError('Failed to run experiment. Ensure your backend is running.');
     } finally {
