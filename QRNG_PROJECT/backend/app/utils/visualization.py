@@ -6,7 +6,7 @@ import os
 import time
 
 # Directory configuration
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PLOT_DIR = os.path.join(BASE_DIR, "static", "plots")
 
 os.makedirs(PLOT_DIR, exist_ok=True)

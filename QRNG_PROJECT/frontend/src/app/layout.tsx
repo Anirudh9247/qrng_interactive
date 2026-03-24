@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from 'react-hot-toast';
+import { ClientParticleBackground } from '@/components/ClientParticleBackground';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,11 +25,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen text-slate-200 bg-slate-950`}
       >
-        {children}
+        <ClientParticleBackground />
+        <Toaster position="bottom-right" toastOptions={{ 
+          style: { background: '#1e293b', color: '#f8fafc', border: '1px solid #334155' } 
+        }} />
+        <div className="relative z-10 w-full">
+          {children}
+        </div>
       </body>
     </html>
   );

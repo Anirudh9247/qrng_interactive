@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Database, Activity } from 'lucide-react';
 import api from '../lib/api';
+import toast from 'react-hot-toast';
 
 interface Experiment {
   id: number;
@@ -21,11 +22,16 @@ export default function HistoryPage() {
     const fetchHistory = async () => {
       try {
         const response = await api.get('/experiments');
-        // Sort by ID descending so the newest experiments are at the top
-        const sortedData = response.data.sort((a: Experiment, b: Experiment) => b.id - a.id);
-        setExperiments(sortedData);
+        if (response.data.success) {
+          // Sort by ID descending so the newest experiments are at the top
+          const sortedData = response.data.data.sort((a: Experiment, b: Experiment) => b.id - a.id);
+          setExperiments(sortedData);
+        } else {
+          toast.error(response.data.error || 'Failed to fetch history');
+        }
       } catch (error) {
         console.error('Failed to fetch history', error);
+        toast.error('Failed to fetch history');
       } finally {
         setLoading(false);
       }
@@ -50,8 +56,8 @@ export default function HistoryPage() {
         </Link>
       </header>
 
-      <main className="max-w-6xl mx-auto">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
+      <main className="max-w-6xl mx-auto z-10 relative">
+        <div className="glass-panel overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 text-slate-500">
               <Activity className="w-8 h-8 animate-spin mb-4 text-cyan-500" />

@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.model.random_experiment import RandomExperiment
 
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from app.utils.randomness_tests import (
     frequency_test,
     entropy_test,
@@ -22,49 +23,67 @@ router = APIRouter()
 
 @router.post("/analyze-randomness")
 async def analyze_randomness(data: RandomnessRequest):
+    try:
+        if data.sample_size > 1_000_000:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "data": None, "error": "Sample size too large. Max allowed = 1,000,000"}
+            )
 
-    if data.sample_size > 1_000_000:
-        raise HTTPException(
-            status_code=400,
-            detail="Sample size too large. Max allowed = 1,000,000"
+        bits = generate_qubits(data.sample_size)
+
+        frequency = frequency_test(bits)
+        entropy = entropy_test(bits)
+
+        return {
+            "success": True,
+            "data": {
+                "generated_bits": bits,
+                "frequency_test": frequency,
+                "entropy_test": entropy
+            },
+            "error": None
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)}
         )
-
-    bits = generate_qubits(data.sample_size)
-
-    frequency = frequency_test(bits)
-    entropy = entropy_test(bits)
-
-    return {
-        "generated_bits": bits,
-        "frequency_test": frequency,
-        "entropy_test": entropy
-    }
 
 
 @router.post("/run-experiment")
-def run_experiment(generator: str, sample_size: int):
+def run_experiment_endpoint(generator: str, sample_size: int):
+    try:
+        if generator == "quantum":
+            bits = generate_qubits(sample_size)
+        elif generator == "classical":
+            bits = generate_classical_bits(sample_size)
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "data": None, "error": "Invalid generator type"}
+            )
 
-    if generator == "quantum":
-        bits = generate_qubits(sample_size)
+        zeros = bits.count("0")
+        ones = bits.count("1")
+        entropy = entropy_test(bits)
 
-    elif generator == "classical":
-        bits = generate_classical_bits(sample_size)
-
-    else:
-        raise ValueError("Invalid generator type")
-
-    zeros = bits.count("0")
-    ones = bits.count("1")
-
-    entropy = entropy_test(bits)
-
-    return {
-        "generator": generator,
-        "sample_size": sample_size,
-        "zeros": zeros,
-        "ones": ones,
-        "entropy": entropy
-    }
+        return {
+            "success": True,
+            "data": {
+                "generator": generator,
+                "sample_size": sample_size,
+                "zeros": zeros,
+                "ones": ones,
+                "entropy": entropy
+            },
+            "error": None
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)}
+        )
 
 
 @router.post("/run-experiment-db")
@@ -72,38 +91,70 @@ def run_experiment_db(
     data: ExperimentRequest,
     db: Session = Depends(get_db)
 ):
+    try:
+        # Note: here we use the original run_experiment function from analysis_service,
+        # which returns the dictionary { zeros, ones, entropy, ... } directly.
+        result = run_experiment(data.generator, data.sample_size)
 
-    result = run_experiment(data.generator, data.sample_size)
+        experiment = RandomExperiment(
+            generator=data.generator,
+            sample_size=data.sample_size,
+            zeros=result["zeros"],
+            ones=result["ones"],
+            entropy=result["entropy"]
+        )
 
-    experiment = RandomExperiment(
-        generator=data.generator,
-        sample_size=data.sample_size,
-        zeros=result["zeros"],
-        ones=result["ones"],
-        entropy=result["entropy"]
-    )
+        db.add(experiment)
+        db.commit()
+        db.refresh(experiment)
 
-    db.add(experiment)
-    db.commit()
-    db.refresh(experiment)
-
-    return result
+        return {
+            "success": True,
+            "data": result,
+            "error": None
+        }
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)}
+        )
 
 @router.get("/experiments")
 def get_experiments(db: Session = Depends(get_db)):
-
-    experiments = db.query(RandomExperiment).all()
-
-    return experiments
+    try:
+        experiments = db.query(RandomExperiment).all()
+        return {
+            "success": True,
+            "data": experiments,
+            "error": None
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)}
+        )
 
 @router.get("/experiment/{experiment_id}")
 def get_experiment(experiment_id: int, db: Session = Depends(get_db)):
+    try:
+        experiment = db.query(RandomExperiment).filter(
+            RandomExperiment.id == experiment_id
+        ).first()
 
-    experiment = db.query(RandomExperiment).filter(
-        RandomExperiment.id == experiment_id
-    ).first()
+        if not experiment:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "data": None, "error": "Experiment not found"}
+            )
 
-    if not experiment:
-        raise HTTPException(status_code=404, detail="Experiment not found")
-
-    return experiment
+        return {
+            "success": True,
+            "data": experiment,
+            "error": None
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)}
+        )
