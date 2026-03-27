@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 const DashboardChart = dynamic(() => import('@/components/DashboardChart'), { ssr: false });
@@ -25,6 +26,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<ExperimentResult | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch('/dashboard/history');
+    router.prefetch('/dashboard/compare');
+  }, [router]);
 
   const handleRunExperiment = async () => {
     setLoading(true);
@@ -148,7 +155,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {result ? (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-pulse">
+              <div className="bg-slate-800 h-24 rounded-lg"></div>
+              <div className="bg-slate-800 h-24 rounded-lg"></div>
+              <div className="bg-slate-800 h-24 rounded-lg"></div>
+            </div>
+          ) : result ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="glass-panel p-5 subtle-glow">

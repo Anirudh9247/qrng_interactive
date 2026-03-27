@@ -59,9 +59,10 @@ export default function HistoryPage() {
       <main className="max-w-6xl mx-auto z-10 relative">
         <div className="glass-panel overflow-hidden">
           {loading ? (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-              <Activity className="w-8 h-8 animate-spin mb-4 text-cyan-500" />
-              <p>Loading database records...</p>
+            <div className="p-4 space-y-3 animate-pulse">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-10 bg-slate-800 rounded-lg"></div>
+              ))}
             </div>
           ) : (
             <div className="overflow-x-auto">

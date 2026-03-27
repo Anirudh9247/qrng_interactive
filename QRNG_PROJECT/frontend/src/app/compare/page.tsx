@@ -70,7 +70,12 @@ export default function ComparePage() {
         {loading ? "Comparing..." : "Run Comparison"}
       </button>
       {error && <p className="text-red-400 mb-4">{error}</p>}
-      {result && (
+      {loading ? (
+        <div className="space-y-4 animate-pulse">
+          <div className="bg-slate-800 h-24 rounded-lg"></div>
+          <div className="bg-slate-800 h-64 rounded-lg"></div>
+        </div>
+      ) : result ? (
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="glass-panel p-6 subtle-glow">
             <p className="text-slate-400 text-sm">Quantum Entropy</p>
@@ -104,7 +109,7 @@ export default function ComparePage() {
             </div>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
