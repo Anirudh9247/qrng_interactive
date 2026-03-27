@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axios from "@/app/lib/api";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import dynamic from "next/dynamic";
+
+const CompareChart = dynamic(() => import("@/components/CompareChart"), { ssr: false });
 import toast from "react-hot-toast";
 
 interface ComparisonResult {
@@ -53,10 +55,12 @@ export default function ComparePage() {
     }
   };
 
-  const chartData = result ? [
-    { name: "Quantum", entropy: result.quantum_entropy },
-    { name: "Classical", entropy: result.classical_entropy },
-  ] : [];
+  const chartData = useMemo(() => {
+    return result ? [
+      { name: "Quantum", entropy: result.quantum_entropy },
+      { name: "Classical", entropy: result.classical_entropy },
+    ] : [];
+  }, [result]);
 
   return (
     <div className="p-8 text-white max-w-6xl mx-auto z-10 relative">
@@ -87,15 +91,7 @@ export default function ComparePage() {
             <p className="text-slate-500 text-xs break-words mt-2 font-mono">{formatBits(result.classical_bits, 80)}</p>
           </div>
           <div className="glass-panel p-6 col-span-2 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" stroke="#9ca3af"/>
-                <YAxis domain={[0, 1]} stroke="#9ca3af"/>
-                <Tooltip contentStyle={{ background: "#1f2937", border: "none" }}/>
-                <Legend/>
-                <Bar dataKey="entropy" fill="#22d3ee" radius={[4,4,0,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
+            <CompareChart chartData={chartData} />
           </div>
           {result.comparison_plot && (
             <div className="glass-panel p-6 col-span-2 flex flex-col items-center">

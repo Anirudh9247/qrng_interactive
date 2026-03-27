@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
+const DashboardChart = dynamic(() => import('@/components/DashboardChart'), { ssr: false });
 import Link from 'next/link';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
@@ -52,12 +54,13 @@ export default function DashboardPage() {
     }
   };
 
-  const chartData = result
-    ? [
+  const chartData = useMemo(() => {
+    if (!result) return [];
+    return [
       { name: 'Zeros (0)', count: result.zeros },
       { name: 'Ones (1)', count: result.ones },
-    ]
-    : [];
+    ];
+  }, [result]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
@@ -179,27 +182,7 @@ export default function DashboardPage() {
                 <div className="glass-panel p-6 h-80">
                   <h3 className="text-lg font-semibold text-white mb-6">Bit Distribution</h3>
 
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                      <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#94a3b8' }} />
-                      <YAxis stroke="#64748b" tick={{ fill: '#94a3b8' }} />
-                      <Tooltip
-                        cursor={{ fill: '#1e293b' }}
-                        contentStyle={{
-                          backgroundColor: '#020617',
-                          border: '1px solid #1e293b',
-                          borderRadius: '8px',
-                        }}
-                        itemStyle={{ color: '#22d3ee' }}
-                      />
-                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                        {chartData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#22d3ee'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <DashboardChart chartData={chartData} />
                 </div>
 
                 {result.distribution_plot && (
