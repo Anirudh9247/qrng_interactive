@@ -15,12 +15,12 @@ app = FastAPI(title="Secure QRNG API")
 
 import os
 
-# --- Add this CORS block ---
+# --- CORS ---
 allowed_origins_env = os.getenv(
-    "ALLOWED_ORIGINS", 
+    "ALLOWED_ORIGINS",
     "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000"
 )
-origins_list = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+origins_list = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,

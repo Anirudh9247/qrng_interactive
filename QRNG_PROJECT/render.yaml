@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: qrng-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./data/qrng.db
+      - key: BACKEND_URL
+        value: https://qrng-backend.onrender.com
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://qrng-project.vercel.app,http://localhost:3000
+    disk:
+      name: qrng-data
+      mountPath: /app/data
+      sizeGB: 1
