@@ -25,12 +25,14 @@ def save_entropy_comparison_plot(quantum_entropy, classical_entropy):
     plt.ylabel("Entropy")
     plt.grid(axis="y", linestyle="--", alpha=0.6)
 
-    plot_path = os.path.join(PLOT_DIR, "entropy_comparison.png")
+    filename = "entropy_comparison.png"
+    plot_path = os.path.join(PLOT_DIR, filename)
 
     plt.savefig(plot_path)
     plt.close()
 
-    return plot_path
+    # Return relative web path so _make_url() builds a correct URL
+    return f"static/plots/{filename}"
 
 # Bit distribution plot
 def save_bit_distribution_plot(zeros, ones):
@@ -52,7 +54,8 @@ def save_bit_distribution_plot(zeros, ones):
     plt.savefig(plot_path)
     plt.close()
 
-    return plot_path
+    # Return relative web path so _make_url() builds a correct URL
+    return f"static/plots/{filename}"
 
 # Entropy progress plot
 def plot_entropy_progress(sample_sizes, entropy_values):
@@ -71,4 +74,5 @@ def plot_entropy_progress(sample_sizes, entropy_values):
     plt.savefig(plot_path)
     plt.close()
 
-    return plot_path
+    # Return relative web path so _make_url() builds a correct URL
+    return f"static/plots/{filename}"

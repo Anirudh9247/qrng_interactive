@@ -10,7 +10,7 @@ from app.services.classical_rng_service import generate_classical_bits
 from app.utils.visualization import save_bit_distribution_plot, save_entropy_comparison_plot
 
 load_dotenv()
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://qrng-interactive.onrender.com")
 
 
 def _to_bitstring(bits) -> str:
