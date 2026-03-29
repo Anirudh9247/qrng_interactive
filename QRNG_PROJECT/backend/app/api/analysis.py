@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.schema.analysis_schema import RandomnessRequest
@@ -88,13 +88,19 @@ def run_experiment_endpoint(generator: str, sample_size: int):
 
 @router.post("/run-experiment-db")
 def run_experiment_db(
+    request: Request,
     data: ExperimentRequest,
     db: Session = Depends(get_db)
 ):
     try:
-        # Note: here we use the original run_experiment function from analysis_service,
-        # which returns the dictionary { zeros, ones, entropy, ... } directly.
         result = run_experiment(data.generator, data.sample_size)
+
+        # Build an absolute plot URL from the actual incoming request host.
+        # This works correctly on Render, locally, and everywhere — no env var needed.
+        relative_path = result.get("distribution_plot", "")
+        if relative_path and not relative_path.startswith("http"):
+            base = str(request.base_url).rstrip("/")
+            result["distribution_plot"] = f"{base}/{relative_path.lstrip('/')}"
 
         experiment = RandomExperiment(
             generator=data.generator,
