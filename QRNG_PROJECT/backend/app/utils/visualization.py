@@ -2,77 +2,71 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-import os
-import time
-
-# Directory configuration
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-PLOT_DIR = os.path.join(BASE_DIR, "static", "plots")
-
-os.makedirs(PLOT_DIR, exist_ok=True)
+import io
+import base64
 
 
-# Entropy comparison plot
-def save_entropy_comparison_plot(quantum_entropy, classical_entropy):
+def _fig_to_base64() -> str:
+    """Render the current matplotlib figure to a base64-encoded PNG string."""
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    plt.close()
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")
 
+
+def save_entropy_comparison_plot(quantum_entropy: float, classical_entropy: float) -> str:
     labels = ["Quantum RNG", "Classical RNG"]
     values = [quantum_entropy, classical_entropy]
 
-    plt.figure()
-    plt.bar(labels, values)
+    fig, ax = plt.subplots(facecolor="#0f172a")
+    ax.set_facecolor("#1e293b")
+    bars = ax.bar(labels, values, color=["#06b6d4", "#3b82f6"], width=0.4)
 
-    plt.title("Entropy Comparison")
-    plt.ylabel("Entropy")
-    plt.grid(axis="y", linestyle="--", alpha=0.6)
+    ax.set_title("Entropy Comparison", color="white", fontsize=14, pad=12)
+    ax.set_ylabel("Entropy", color="#94a3b8")
+    ax.tick_params(colors="#94a3b8")
+    ax.spines[:].set_color("#334155")
+    ax.grid(axis="y", linestyle="--", alpha=0.3, color="#475569")
+    for bar, val in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
+                f"{val:.4f}", ha="center", va="bottom", color="white", fontsize=10)
 
-    filename = "entropy_comparison.png"
-    plot_path = os.path.join(PLOT_DIR, filename)
+    return _fig_to_base64()
 
-    plt.savefig(plot_path)
-    plt.close()
 
-    # Return relative web path so _make_url() builds a correct URL
-    return f"static/plots/{filename}"
-
-# Bit distribution plot
-def save_bit_distribution_plot(zeros, ones):
-
-    labels = ["0", "1"]
+def save_bit_distribution_plot(zeros: int, ones: int) -> str:
+    labels = ["0 (Zeros)", "1 (Ones)"]
     values = [zeros, ones]
 
-    plt.figure()
-    plt.bar(labels, values)
+    fig, ax = plt.subplots(facecolor="#0f172a")
+    ax.set_facecolor("#1e293b")
+    bars = ax.bar(labels, values, color=["#06b6d4", "#8b5cf6"], width=0.4)
 
-    plt.title("Bit Distribution")
-    plt.xlabel("Bit Value")
-    plt.ylabel("Count")
-    plt.grid(axis="y", linestyle="--", alpha=0.6)
+    ax.set_title("Bit Distribution", color="white", fontsize=14, pad=12)
+    ax.set_xlabel("Bit Value", color="#94a3b8")
+    ax.set_ylabel("Count", color="#94a3b8")
+    ax.tick_params(colors="#94a3b8")
+    ax.spines[:].set_color("#334155")
+    ax.grid(axis="y", linestyle="--", alpha=0.3, color="#475569")
+    for bar, val in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
+                str(val), ha="center", va="bottom", color="white", fontsize=11, fontweight="bold")
 
-    filename = f"distribution_{int(time.time())}.png"
-    plot_path = os.path.join(PLOT_DIR, filename)
+    return _fig_to_base64()
 
-    plt.savefig(plot_path)
-    plt.close()
 
-    # Return relative web path so _make_url() builds a correct URL
-    return f"static/plots/{filename}"
+def plot_entropy_progress(sample_sizes, entropy_values) -> str:
+    fig, ax = plt.subplots(facecolor="#0f172a")
+    ax.set_facecolor("#1e293b")
+    ax.plot(sample_sizes, entropy_values, marker="o", color="#06b6d4",
+            linewidth=2, markerfacecolor="#8b5cf6", markersize=6)
 
-# Entropy progress plot
-def plot_entropy_progress(sample_sizes, entropy_values):
+    ax.set_title("Entropy vs Sample Size", color="white", fontsize=14, pad=12)
+    ax.set_xlabel("Number of Qubits", color="#94a3b8")
+    ax.set_ylabel("Entropy", color="#94a3b8")
+    ax.tick_params(colors="#94a3b8")
+    ax.spines[:].set_color("#334155")
+    ax.grid(True, linestyle="--", alpha=0.3, color="#475569")
 
-    plt.figure()
-    plt.plot(sample_sizes, entropy_values, marker="o")
-
-    plt.title("Entropy vs Sample Size")
-    plt.xlabel("Number of Qubits")
-    plt.ylabel("Entropy")
-    plt.grid(True, linestyle="--", alpha=0.6)
-
-    filename = f"entropy_progress_{int(time.time())}.png"
-    plot_path = os.path.join(PLOT_DIR, filename)
-
-    plt.savefig(plot_path)
-    plt.close()
-
-    # Return relative web path so _make_url() builds a correct URL
-    return f"static/plots/{filename}"
+    return _fig_to_base64()
