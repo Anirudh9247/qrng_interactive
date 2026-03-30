@@ -99,7 +99,8 @@ def run_experiment_db(
             sample_size=data.sample_size,
             zeros=result["zeros"],
             ones=result["ones"],
-            entropy=result["entropy"]
+            entropy=result["entropy"],
+            chi_square=result.get("chi_square")
         )
 
         db.add(experiment)
