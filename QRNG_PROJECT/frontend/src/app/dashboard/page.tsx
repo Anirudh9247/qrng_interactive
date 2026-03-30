@@ -25,17 +25,32 @@ export default function DashboardPage() {
   const [generator, setGenerator] = useState('quantum');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [warmingUpMessage, setWarmingUpMessage] = useState('');
   const [result, setResult] = useState<ExperimentResult | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     router.prefetch('/dashboard/history');
     router.prefetch('/dashboard/compare');
+    
+    // Pre-flight ping to wake up the Render backend
+    api.get('/health').catch(() => {
+      // Ignore initial errors silently
+    });
   }, [router]);
 
   const handleRunExperiment = async () => {
     setLoading(true);
     setError('');
+    setWarmingUpMessage('');
+
+    const warmupTimeout = setTimeout(() => {
+      setWarmingUpMessage('Warming up backend (may take up to 60s)...');
+      toast('Waking up the server... this may take up to a minute on the free tier.', {
+        icon: '⏳',
+        duration: 8000,
+      });
+    }, 4000); // Show after 4 seconds of waiting
 
     try {
       const response = await api.post('/run-experiment-db', {
@@ -57,6 +72,8 @@ export default function DashboardPage() {
       setError('Failed to run experiment. Ensure your backend is running.');
       toast.error('Failed to run experiment. Ensure your backend is running.');
     } finally {
+      clearTimeout(warmupTimeout);
+      setWarmingUpMessage('');
       setLoading(false);
     }
   };
@@ -145,10 +162,15 @@ export default function DashboardPage() {
               <button
                 onClick={handleRunExperiment}
                 disabled={loading}
-                className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-cyan-500/25 flex justify-center items-center gap-2 disabled:opacity-50"
+                className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-cyan-500/25 flex justify-center items-center gap-2 disabled:opacity-50 flex-col"
               >
-                {loading ? <Activity className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-                {loading ? 'Simulating...' : 'Run Experiment'}
+                <div className="flex justify-center items-center gap-2">
+                  {loading ? <Activity className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                  {loading ? 'Simulating...' : 'Run Experiment'}
+                </div>
+                {warmingUpMessage && (
+                  <span className="text-xs text-cyan-200 mt-1">{warmingUpMessage}</span>
+                )}
               </button>
             </div>
           </div>

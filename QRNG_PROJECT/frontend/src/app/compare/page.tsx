@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import axios from "@/app/lib/api";
 import dynamic from "next/dynamic";
 
@@ -34,10 +34,28 @@ export default function ComparePage() {
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [warmingUpMessage, setWarmingUpMessage] = useState("");
+
+  useEffect(() => {
+    // Pre-flight ping to wake up the Render backend
+    axios.get('/health').catch(() => {
+      // Ignore initial errors silently
+    });
+  }, []);
 
   const handleCompare = async () => {
     setLoading(true);
     setError("");
+    setWarmingUpMessage("");
+    
+    const warmupTimeout = setTimeout(() => {
+      setWarmingUpMessage('Warming up backend (may take up to 60s)...');
+      toast('Waking up the server... this may take up to a minute on the free tier.', {
+        icon: '⏳',
+        duration: 8000,
+      });
+    }, 4000);
+
     try {
       const res = await axios.post("/comparison/compare-rng", { sample_size: 100 });
       if (res.data.success) {
@@ -51,6 +69,8 @@ export default function ComparePage() {
       setError("Failed to fetch comparison. Ensure backend is running.");
       toast.error("Failed to fetch comparison. Ensure backend is running.");
     } finally {
+      clearTimeout(warmupTimeout);
+      setWarmingUpMessage("");
       setLoading(false);
     }
   };
@@ -66,8 +86,11 @@ export default function ComparePage() {
     <div className="p-8 text-white max-w-6xl mx-auto z-10 relative">
       <h1 className="text-2xl font-bold mb-6 mt-4">Quantum vs Classical RNG</h1>
       <button onClick={handleCompare} disabled={loading}
-        className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] px-6 py-3 rounded-lg font-semibold mb-6 disabled:opacity-50 transition-all">
-        {loading ? "Comparing..." : "Run Comparison"}
+        className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] px-6 py-3 rounded-lg font-semibold mb-6 disabled:opacity-50 transition-all flex flex-col items-center justify-center">
+        <div>{loading ? "Comparing..." : "Run Comparison"}</div>
+        {warmingUpMessage && (
+          <span className="text-xs text-cyan-200 mt-1 font-normal">{warmingUpMessage}</span>
+        )}
       </button>
       {error && <p className="text-red-400 mb-4">{error}</p>}
       {loading ? (

@@ -38,3 +38,7 @@ app.include_router(comparison_router)
 @app.get("/")
 def root():
     return {"message": "QRNG Backend Running Successfully"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
