@@ -38,5 +38,5 @@ RUN mkdir -p static/plots
 # Expose port
 EXPOSE 8000
 
-# Start with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start with uvicorn using the mapped PORT from Render
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
