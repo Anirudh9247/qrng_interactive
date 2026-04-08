@@ -64,8 +64,8 @@ def run_experiment_endpoint(generator: str, sample_size: int):
                 content={"success": False, "data": None, "error": "Invalid generator type"}
             )
 
-        zeros = bits.count("0")
-        ones = bits.count("1")
+        zeros = str(bits).count("0")
+        ones = str(bits).count("1")
         entropy = entropy_test(bits)
 
         return {
