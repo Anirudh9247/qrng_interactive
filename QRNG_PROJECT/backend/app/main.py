@@ -1,3 +1,8 @@
+import matplotlib
+matplotlib.use("Agg")
+import os
+os.makedirs("static/plots", exist_ok=True)
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware 
@@ -13,7 +18,9 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Secure QRNG API")
 
-import os
+@app.on_event("startup")
+def startup_event():
+    print("🚀 App started successfully")
 
 # --- CORS ---
 allowed_origins_env = os.getenv(
@@ -37,7 +44,7 @@ app.include_router(comparison_router)
 
 @app.get("/")
 def root():
-    return {"message": "QRNG Backend Running Successfully"}
+    return {"status": "running"}
 
 @app.get("/health")
 def health_check():
