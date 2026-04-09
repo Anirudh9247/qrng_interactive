@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 const CompareChart = dynamic(() => import("@/components/CompareChart"), { ssr: false });
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface ComparisonResult {
   quantum_entropy: number;
@@ -84,6 +85,9 @@ export default function ComparePage() {
 
   return (
     <div className="p-8 text-white max-w-6xl mx-auto z-10 relative">
+      <Link href="/dashboard" className="text-cyan-400 hover:text-cyan-300 text-sm mb-4 flex items-center gap-2 transition-colors">
+        &larr; Back to Dashboard
+      </Link>
       <h1 className="text-2xl font-bold mb-6 mt-4">Quantum vs Classical RNG</h1>
       <button onClick={handleCompare} disabled={loading}
         className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] px-6 py-3 rounded-lg font-semibold mb-6 disabled:opacity-50 transition-all flex flex-col items-center justify-center">
