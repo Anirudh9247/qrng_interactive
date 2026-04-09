@@ -1,5 +1,5 @@
 from app.utils.randomness_tests import frequency_test, entropy_test, chi_square_test
-from app.services.quantum_service import generate_qubits
+from app.services.quantum_service import generate_qubits, generate_real_quantum_bits
 from app.services.classical_rng_service import generate_classical_bits
 from app.utils.visualization import save_bit_distribution_plot, save_entropy_comparison_plot
 
@@ -21,8 +21,12 @@ def run_randomness_analysis(bits):
 
 
 def run_experiment(generator: str, sample_size: int):
-    raw = generate_qubits(sample_size) if generator == "quantum" \
-          else generate_classical_bits(sample_size)
+    if generator == "quantum":
+        raw = generate_real_quantum_bits(sample_size)
+    elif generator == "simulator":
+        raw = generate_qubits(sample_size)
+    else:
+        raw = generate_classical_bits(sample_size)
 
     bits = _to_bitstring(raw)
 

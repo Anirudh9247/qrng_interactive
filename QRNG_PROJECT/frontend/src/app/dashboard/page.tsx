@@ -139,8 +139,9 @@ export default function DashboardPage() {
                   onChange={(e) => setGenerator(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-cyan-500/50 outline-none backdrop-blur-sm transition-all"
                 >
-                  <option value="quantum">Qiskit AerSimulator (Quantum)</option>
-                  <option value="classical">Python random (Classical)</option>
+                  <option value="classical">Classical RNG</option>
+                  <option value="simulator">Quantum Simulator</option>
+                  <option value="quantum">Real Quantum (QRNG API)</option>
                 </select>
               </div>
 
