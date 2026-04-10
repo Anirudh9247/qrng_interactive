@@ -1,5 +1,5 @@
 # ── Stage 1: Build ─────────────────────────────────────────────────────────────
-FROM python:3.11-slim-bookworm AS builder
+FROM python:3.12-slim-bookworm AS builder
 
 # System deps required by Qiskit-Aer (C/C++ compiled extensions) & matplotlib
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,7 +15,7 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # ── Stage 2: Runtime ────────────────────────────────────────────────────────────
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 # Runtime system lib for OpenMP (needed by Qiskit-Aer)
 RUN apt-get update && apt-get install -y --no-install-recommends \
